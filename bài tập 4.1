@@ -1,0 +1,82 @@
+// Cấu trúc node
+#include <stdio.h>
+#include <stdlib.h>
+
+struct node {
+    int data;
+    struct node* next;
+};
+// display — duyệt và in
+void display(struct node* head) {
+    struct node* temp = head;
+    while (temp != NULL) {
+        printf("%d -> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+// addback — thêm cuối danh sách
+struct node* addback(struct node* head, int data) {
+    struct node* newNode = (struct node*)malloc(sizeof(struct node));
+    newNode->data = data;
+    newNode->next = NULL;
+
+    if (head == NULL) {
+        return newNode;
+    }
+
+    struct node* temp = head;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+
+    temp->next = newNode;
+    return head;
+}
+// find — tìm node theo giá trị
+struct node* find(struct node* head, int data) {
+    struct node* temp = head;
+    while (temp != NULL) {
+        if (temp->data == data) {
+            return temp;
+        }
+        temp = temp->next;
+    }
+    return NULL;
+}
+// delnode — xóa node
+struct node* delnode(struct node* head, struct node* pelement) {
+    if (head == NULL || pelement == NULL) {
+        return head;
+    }
+
+    // Xóa head
+    if (head == pelement) {
+        struct node* temp = head;
+        head = head->next;
+        free(temp);
+        return head;
+    }
+
+    // Tìm node trước pelement
+    struct node* prev = head;
+    while (prev->next != NULL && prev->next != pelement) {
+        prev = prev->next;
+    }
+
+    if (prev->next == pelement) {
+        prev->next = pelement->next;
+        free(pelement);
+    }
+
+    return head;
+}
+// freelist — giải phóng toàn bộ
+void freelist(struct node* head) {
+    struct node* temp;
+    while (head != NULL) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
