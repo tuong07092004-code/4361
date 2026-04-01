@@ -1,0 +1,153 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define SIZE 100
+
+// =====================
+// ===== Problem 6.1 ====
+// =====================
+
+typedef struct {
+    char firstname[50];
+    char lastname[50];
+    int age;
+} Person;
+
+// Compare theo firstname
+int cmp_firstname(const void *a, const void *b) {
+    Person *p1 = (Person*)a;
+    Person *p2 = (Person*)b;
+    return strcmp(p1->firstname, p2->firstname);
+}
+
+// Compare theo lastname
+int cmp_lastname(const void *a, const void *b) {
+    Person *p1 = (Person*)a;
+    Person *p2 = (Person*)b;
+    return strcmp(p1->lastname, p2->lastname);
+}
+
+// apply function pointer
+void apply(Person *arr, int n, void (*func)(Person)) {
+    for (int i = 0; i < n; i++) {
+        func(arr[i]);
+    }
+}
+
+// in người > 20 tuổi
+void isolder(Person p) {
+    if (p.age > 20) {
+        printf("%s %s %d\n", p.firstname, p.lastname, p.age);
+    }
+}
+
+// =====================
+// ===== Problem 6.2 ====
+// =====================
+
+typedef struct Node {
+    char *word;
+    int count;
+    struct Node *next;
+} Node;
+
+Node *table[SIZE];
+
+// hash đơn giản
+unsigned int hash(char *s) {
+    unsigned int h = 0;
+    while (*s)
+        h = h * 31 + *s++;
+    return h % SIZE;
+}
+
+// lookup
+Node* lookup(char *word) {
+    int index = hash(word);
+    Node *curr = table[index];
+
+    while (curr != NULL) {
+        if (strcmp(curr->word, word) == 0) {
+            return curr;
+        }
+        curr = curr->next;
+    }
+
+    // tạo mới
+    Node *newnode = malloc(sizeof(Node));
+    newnode->word = strdup(word);
+    newnode->count = 0;
+
+    newnode->next = table[index];
+    table[index] = newnode;
+
+    return newnode;
+}
+
+// giải phóng bộ nhớ
+void cleartable() {
+    for (int i = 0; i < SIZE; i++) {
+        Node *curr = table[i];
+        while (curr != NULL) {
+            Node *tmp = curr;
+            curr = curr->next;
+            free(tmp->word);
+            free(tmp);
+        }
+        table[i] = NULL;
+    }
+}
+
+// =====================
+// ===== MAIN ===========
+// =====================
+
+int main() {
+
+    // ===== Test Problem 6.1 =====
+    Person arr[] = {
+        {"An", "Nguyen", 22},
+        {"Binh", "Tran", 19},
+        {"Cuong", "Le", 25},
+        {"Dung", "Pham", 18}
+    };
+
+    int n = sizeof(arr)/sizeof(arr[0]);
+
+    printf("Sort theo firstname:\n");
+    qsort(arr, n, sizeof(Person), cmp_firstname);
+    for (int i = 0; i < n; i++)
+        printf("%s %s %d\n", arr[i].firstname, arr[i].lastname, arr[i].age);
+
+    printf("\nSort theo lastname:\n");
+    qsort(arr, n, sizeof(Person), cmp_lastname);
+    for (int i = 0; i < n; i++)
+        printf("%s %s %d\n", arr[i].firstname, arr[i].lastname, arr[i].age);
+
+    printf("\nNguoi > 20 tuoi:\n");
+    apply(arr, n, isolder);
+
+
+    // ===== Test Problem 6.2 =====
+    char *words[] = {"apple", "banana", "apple", "orange", "banana", "apple"};
+    int m = 6;
+
+    for (int i = 0; i < m; i++) {
+        Node *n = lookup(words[i]);
+        n->count++;
+    }
+
+    printf("\nWord frequency:\n");
+    for (int i = 0; i < SIZE; i++) {
+        Node *curr = table[i];
+        while (curr != NULL) {
+            printf("%s: %d\n", curr->word, curr->count);
+            curr = curr->next;
+        }
+    }
+
+    cleartable();
+
+    return 0;
+}
