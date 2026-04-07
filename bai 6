@@ -1,0 +1,132 @@
+// bai 6.1
+#include <stdio.h>
+#include <string.h>
+
+int strend(char *s, char *t) {
+    int len_s = strlen(s);
+    int len_t = strlen(t);
+
+    if (len_t > len_s) return 0;
+
+    return strcmp(s + len_s - len_t, t) == 0;
+}
+
+int main() {
+    printf("%d\n", strend("hello", "lo")); // 1
+    printf("%d\n", strend("hello", "he")); // 0
+}
+// bai 6.2
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAXLINES 100
+
+char *lines[MAXLINES];
+
+char *getfield(char *line, int field) {
+    static char buf[100];
+    int i = 0, f = 0;
+
+    while (*line) {
+        if (*line == ' ') f++;
+        if (f == field) {
+            while (*line && *line != ' ') {
+                buf[i++] = *line++;
+            }
+            break;
+        }
+        line++;
+    }
+    buf[i] = '\0';
+    return buf;
+}
+
+int compare(const void *a, const void *b) {
+    char *s1 = *(char **)a;
+    char *s2 = *(char **)b;
+
+    return atof(getfield(s1, 1)) - atof(getfield(s2, 1));
+}
+
+int main() {
+    lines[0] = "apple 10";
+    lines[1] = "banana 2";
+    lines[2] = "orange 30";
+
+    qsort(lines, 3, sizeof(char *), compare);
+
+    for (int i = 0; i < 3; i++)
+        printf("%s\n", lines[i]);
+}
+// bai 6.3
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAXSTACK 100
+
+double stack[MAXSTACK];
+int top = 0;
+
+void push(double x) {
+    if (top >= MAXSTACK) {
+        printf("Error: stack full\n");
+        exit(1);
+    }
+    stack[top++] = x;
+}
+
+double pop() {
+    if (top <= 0) {
+        printf("Error: stack empty\n");
+        exit(1);
+    }
+    return stack[--top];
+}
+
+// kiểm tra chuỗi có phải số không (chuẩn hơn isdigit)
+int is_number(char *s) {
+    char *end;
+    strtod(s, &end);
+    return *end == '\0';
+}
+
+int main(int argc, char *argv[]) {
+    for (int i = 1; i < argc; i++) {
+
+        if (is_number(argv[i])) {
+            push(atof(argv[i]));
+        } else if (strlen(argv[i]) == 1) {
+            double b = pop();
+            double a = pop();
+
+            switch (argv[i][0]) {
+                case '+': push(a + b); break;
+                case '-': push(a - b); break;
+                case '*': push(a * b); break;
+                case '/': 
+                    if (b == 0) {
+                        printf("Error: divide by zero\n");
+                        return 1;
+                    }
+                    push(a / b); 
+                    break;
+                default:
+                    printf("Error: unknown operator %s\n", argv[i]);
+                    return 1;
+            }
+        } else {
+            printf("Error: invalid input %s\n", argv[i]);
+            return 1;
+        }
+    }
+
+    if (top != 1) {
+        printf("Error: invalid expression\n");
+        return 1;
+    }
+
+    printf("Result: %.6g\n", pop());
+    return 0;
+}
